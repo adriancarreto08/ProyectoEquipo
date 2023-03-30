@@ -1,0 +1,37 @@
+version: '2'
+services:
+  mariadb:
+    image: docker.io/bitnami/mariadb:10.6
+    #container_name: db-iot
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes  #only for development.
+      - MARIADB_USER=iot_user
+      - MARIADB_DATABASE=iot_app
+    volumes:
+      - './db://docker-entrypoint-initdb.d'
+  iotapp:
+    image: docker.io/bitnami/codeigniter:4
+    #container_name: iot-app
+    ports:
+      - '80:8000'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes #only for development
+      - CODEIGNITER_DATABASE_HOST=mariadb
+      - CODEIGNITER_DATABASE_PORT_NUMBER=3306
+      - CODEIGNITER_DATABASE_USER=iot_user
+      - CODEIGNITER_DATABASE_NAME=iot_app
+    volumes:
+      - '.:/app'
+    depends_on:
+      - mariadb
+  phpmyadmin:
+    #container_name: phpmyadmin
+    image: docker.io/bitnami/phpmyadmin:5
+    ports:
+      - '8080:8080'
+      - '443:8443'
+    depends_on:
+      - mariadb
+volumes:
+    mariadb_data:
+      driver: local
